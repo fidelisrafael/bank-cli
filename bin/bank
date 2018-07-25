@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+require 'bundler'
+
+Bundler.require(:default)
+
+require_relative "../boot.rb"
+require_relative '../lib/bank/cli'
+
+begin
+  # Turn on the engines!
+  Bank::CLI.start_from_argv(ARGV.dup, ENV['CONFIRM'] == 'true')
+# The Exception is raised if user decides to not confirms the transaction.
+rescue Bank::CLI::TransactionNotValidatedError => e
+  puts "\n[ABORTED] This transaction was canceled by the user".colorize(:pink).underline
+  exit
+# Others exceptions
+rescue Exception => e
+  puts "\n[ERROR] #{e.message}".colorize(:red).underline.bold
+
+  raise e if Bank::CLI.debug?
+
+  exit
+end
